@@ -43,7 +43,7 @@
  void rainbow(uint8_t wait) {
    uint32_t i, j;
  
-   for(j=0; j<65535; j+=10) {
+   for(j=0; j<65535; j+=20) {
      for(i=0; i<4*NUM_TLC59711; i++) {
        Wheel(i, i+j & 65535);
      }

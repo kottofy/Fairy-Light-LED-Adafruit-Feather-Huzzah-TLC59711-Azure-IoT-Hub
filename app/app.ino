@@ -17,6 +17,10 @@ static char *pass = WIFI_PASS;
 
 String method = "";
 
+uint16_t red = 0;
+uint16_t green = 0;
+uint16_t blue = 0;
+
 void initWifi()
 {
     // Attempt to connect to Wifi network:
@@ -102,6 +106,7 @@ void loop()
 //        delay(interval);
 //    }
     IoTHubClient_LL_DoWork(iotHubClientHandle);
+    Serial.println("Checking method: " + method);
     if (method != "") 
     {
         if (method == "start") {
@@ -116,5 +121,13 @@ void loop()
         else if (method == "rainbowCycle") {
             rainbowCycle(0);
         }
+        else if (method == "RGB") {
+            Serial.println ("RGB");
+            colorWipe(red, green, blue, 0);
+        }
+    }
+    else
+    {
+       rainbow(0);
     }
 }

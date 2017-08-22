@@ -1,8 +1,6 @@
 const char *onSuccess = "\"Successfully invoke device method\"";
 const char *notFound = "\"No method found\"";
 
-
-
 static void sendCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT result, void *userContextCallback)
 {
     if (IOTHUB_CLIENT_CONFIRMATION_OK == result)
@@ -93,11 +91,42 @@ IOTHUBMESSAGE_DISPOSITION_RESULT receiveMessageCallback(IOTHUB_MESSAGE_HANDLE me
         strncpy(temp, (const char *)buffer, size);
         temp[size] = '\0';
         Serial.printf("Receive C2D message: %s.\r\n", temp);
+
+        String color = getColor(temp);
+        Serial.println("color: " + color);
+
+        if (color != "-1") {
+
+            if (color == "rainbow") {
+                Serial.println("RAINBOW");
+                method = "rainbow";
+            }
+            else if (color == "rainbowCycle") {
+                Serial.println("RAINBOW CYCLE");
+                method = "rainbowCycle";
+            }
+            else {
+                Serial.println("ELSE");
+                method = "RGB";
+                red = getRed(color);
+                green = getGreen(color);
+                blue = getBlue(color);
+
+                if (red == -1 || green == -1 || blue == -1) {
+                    Serial.println("Something went wrong with RGB colors");
+                    red = 0; 
+                    green = 0; 
+                    blue = 0;
+                }
+            }
+        }
+
         free(temp);
         blinkLED();
     }
     return IOTHUBMESSAGE_ACCEPTED;
 }
+
 
 int deviceMethodCallback(
     const char *methodName,
