@@ -1,5 +1,30 @@
 const char *onSuccess = "\"Successfully invoke device method\"";
 const char *notFound = "\"No method found\"";
+bool messagePending = false;
+
+void initIoTHub()
+{
+    Serial.println("Initializing IoT Hub.");
+
+    static char *connectionString = CONNECTION_STRING;
+
+    iotHubClientHandle = IoTHubClient_LL_CreateFromConnectionString(connectionString, MQTT_Protocol);
+    if (iotHubClientHandle == NULL)
+    {
+        Serial.println("Failed on IoTHubClient_CreateFromConnectionString.");
+        while (1)
+            ;
+    }
+
+    IoTHubClient_LL_SetMessageCallback(iotHubClientHandle, receiveMessageCallback, NULL);
+    IoTHubClient_LL_SetDeviceMethodCallback(iotHubClientHandle, deviceMethodCallback, NULL);
+    IoTHubClient_LL_SetDeviceTwinCallback(iotHubClientHandle, twinCallback, NULL);
+}
+
+void checkNewMessages()
+{
+    IoTHubClient_LL_DoWork(iotHubClientHandle);
+}
 
 static void sendCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT result, void *userContextCallback)
 {
@@ -41,33 +66,6 @@ static void sendMessage(IOTHUB_CLIENT_LL_HANDLE iotHubClientHandle, char *buffer
     }
 }
 
-void start()
-{
-    Serial.println("Starting color wipe cycle.");
-    ColorWipeCycle();
-    messageSending = false;
-}
-
-void stop()
-{
-    Serial.println("Stopping LEDs.");
-    stopLEDs();
-    messageSending = false;
-}
-
-void startRainbow()
-{
-    rainbow(0);   
-    messageSending = false;
-
-}
-
-void startRainbowCycle()
-{
-    rainbowCycle(0);              
-    messageSending = false;  
-}
-
 IOTHUBMESSAGE_DISPOSITION_RESULT receiveMessageCallback(IOTHUB_MESSAGE_HANDLE message, void *userContextCallback)
 {
     IOTHUBMESSAGE_DISPOSITION_RESULT result;
@@ -93,73 +91,28 @@ IOTHUBMESSAGE_DISPOSITION_RESULT receiveMessageCallback(IOTHUB_MESSAGE_HANDLE me
         Serial.printf("Receive C2D message: %s.\r\n", temp);
 
         String color = getColor(temp);
+        // Serial.printf("color: %s. \r\n", color);
         Serial.println("color: " + color);
 
-        if (color != "-1") {
-
-            if (color == "rainbow") {
-                Serial.println("RAINBOW");
-                method = "rainbow";
-            }
-            else if (color == "rainbowCycle") {
-                Serial.println("RAINBOW CYCLE");
-                method = "rainbowCycle";
-            }
-            else {
-                Serial.println("ELSE");
-                method = "RGB";
-                red = getRed(color);
-                green = getGreen(color);
-                blue = getBlue(color);
-
-                if (red == -1 || green == -1 || blue == -1) {
-                    Serial.println("Something went wrong with RGB colors");
-                    red = 0; 
-                    green = 0; 
-                    blue = 0;
-                }
-            }
-        }
+        bool result = setReceivedMethod(color);
 
         free(temp);
-        blinkLED();
     }
     return IOTHUBMESSAGE_ACCEPTED;
 }
 
-
-int deviceMethodCallback(
-    const char *methodName,
-    const unsigned char *payload,
-    size_t size,
-    unsigned char **response,
-    size_t *response_size,
-    void *userContextCallback)
+int deviceMethodCallback(const char *methodName, const unsigned char *payload, size_t size,
+                         unsigned char **response, size_t *response_size, void *userContextCallback)
 {
-    Serial.printf("Try to invoke method %s.\r\n", methodName);
+    Serial.printf("Trying to invoke method %s.\r\n", methodName);
     const char *responseMessage = onSuccess;
-    int result = 200;
+    int status = 200;
 
-    if (strcmp(methodName, "start") == 0)
-    {
-        method = "start";
-    }
-    else if (strcmp(methodName, "stop") == 0)
-    {
-        method = "stop";
-    }
-    else if (strcmp(methodName, "rainbow") == 0)
-    {
-        method = "rainbow";
-    }
-    else if (strcmp(methodName, "rainbowCycle") == 0)
-    {
-        method = "rainbowCycle";
-    }
-    else
+    bool result = setReceivedMethod(methodName);
+
+    if (!result)
     {
         Serial.printf("No method %s found.\r\n", methodName);
-        method = "";
         responseMessage = notFound;
         result = 404;
     }
@@ -168,16 +121,10 @@ int deviceMethodCallback(
     *response = (unsigned char *)malloc(*response_size);
     strncpy((char *)(*response), responseMessage, *response_size);
 
-    blinkLED();
-    
-    return result;
+    return status;
 }
 
-void twinCallback(
-    DEVICE_TWIN_UPDATE_STATE updateState,
-    const unsigned char *payLoad,
-    size_t size,
-    void *userContextCallback)
+void twinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsigned char *payLoad, size_t size, void *userContextCallback)
 {
     char *temp = (char *)malloc(size + 1);
     for (int i = 0; i < size; i++)
@@ -187,4 +134,16 @@ void twinCallback(
     temp[size] = '\0';
     parseTwinMessage(temp);
     free(temp);
+}
+
+void setMethod(char *newMethod)
+{
+    // writeEEPROM(newMethod);
+    method = newMethod;
+    blinkLED();
+}
+
+char *getMethod()
+{
+    return method;
 }

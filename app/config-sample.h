@@ -2,11 +2,11 @@
 // Update any information that may be different for your app.
 
 // IoT Hub Stuff
-#define CONNECTION_STRING  ""
+#define CONNECTION_STRING ""
 
 // Wifi Stuff
-#define WIFI_SSID     ""
-#define WIFI_PASS     ""
+#define WIFI_SSID ""
+#define WIFI_PASS ""
 
 // Physical device information for board and sensor
 #define DEVICE_ID "Feather HUZZAH ESP8266 WiFi"
