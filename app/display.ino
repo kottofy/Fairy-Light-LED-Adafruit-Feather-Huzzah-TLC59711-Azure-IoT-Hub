@@ -15,7 +15,7 @@ void displayMethod()
     {
         Serial.println("displayMethod() - IF");
 
-        if (methodName == "start")
+        if (methodName == "rgbWipeCycle")
         {
             rgbWipeCycle();
         }
@@ -44,7 +44,7 @@ void displayMethod()
     {
         Serial.println("displayMethod() - ELSE");
 
-        colorWipe(255*256, 50*256, 50*256, 5);
+        colorWipe(255*256, 256*256, 256*256, 5);
     }
 }
 
@@ -69,10 +69,10 @@ bool setReceivedMethod(String methodName)
             Serial.println("RAINBOW CYCLE");
             tempMethod = "rainbowCycle";
         }
-        else if (methodName == "start")
+        else if (methodName == "rgbWipeCycle")
         {
-            Serial.println("START");
-            tempMethod = "start";
+            Serial.println("RGB WIPE CYCLE");
+            tempMethod = "rgbWipeCycle";
         }
         else if (methodName == "stop")
         {

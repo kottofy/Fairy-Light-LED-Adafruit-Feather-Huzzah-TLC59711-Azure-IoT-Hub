@@ -41,7 +41,7 @@ void colorWipe(uint16_t r, uint16_t g, uint16_t b, uint8_t wait)
 
   for (uint16_t i = 0; i < 8 * NUM_TLC59711; i++)
   {
-    tlc.setLED(i, r, g, b);
+    tlc.setLED(i, r, g/4, b/4);
     tlc.write();
     delay(wait);
   }
