@@ -15,7 +15,7 @@ void setup()
     initBuiltInLED();
     initTLC();
     initIoTHub();
-
+    initLastSetting(iotHubClientHandle, "leddeviceonline");
     Serial.println("Done initializing setup. Here we go!");
 }
 

@@ -3,6 +3,11 @@ uint16_t green = 0;
 uint16_t blue = 0;
 char *method = "";
 
+void initLastSetting(IOTHUB_CLIENT_LL_HANDLE iotHubClientHandle, char *buffer)
+{
+    sendMessage(iotHubClientHandle, buffer);
+}
+
 void displayMethod()
 {
     Serial.println("displayMethod");
