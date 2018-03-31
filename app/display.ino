@@ -44,7 +44,7 @@ void displayMethod()
     {
         Serial.println("displayMethod() - ELSE");
 
-        colorWipe(255*256, 256*256, 256*256, 5);
+        colorWipe(255*256, 255*256, 255*256, 5);
     }
 }
 
